@@ -1,6 +1,7 @@
 plugins {
-    id 'java'
+    id 'application'
     id 'jacoco'
+    id "org.sonarqube" version "4.4.1.3373"
 }
 
 repositories {
@@ -8,22 +9,40 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Logging
+    implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
 
-    implementation 'org.apache.logging.log4j:log4j-core:2.23.1'
-    implementation 'org.apache.logging.log4j:log4j-api:2.23.1'
+    // Google Guava
+    implementation 'com.google.guava:guava:32.1.2-jre'
+
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
-test {
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+application {
+    mainClass = 'com.bits.mvn.App'
+}
+
+tasks.named('test') {
     useJUnitPlatform()
+    // Trigger report automatically after tests
     finalizedBy jacocoTestReport
 }
 
 jacocoTestReport {
     dependsOn test
     reports {
-        html.required = true
-        xml.required = true
+        xml.required = false
+        csv.required = false
+        // Specific path requested: build/reports/jacoco/test/html
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/test/html')
     }
 }
